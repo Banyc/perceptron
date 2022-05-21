@@ -33,7 +33,7 @@ fn main() {
 
     let mut perceptron = Perceptron::new(canvas.height() * canvas.width(), weight, bias);
 
-    let mut corrects = 0;
+    let mut training_corrects = 0;
     for i in 0..rounds {
         canvas.clear();
         let label = match i % 2 == 0 {
@@ -47,18 +47,43 @@ fn main() {
             }
         };
         let point_vector = canvas.one_dimensional_array();
-        let is_correct = perceptron.train_and_is_correct(point_vector, label);
-        if is_correct {
-            corrects += 1;
+        let is_training_correct = perceptron.train_and_is_correct(point_vector, label);
+        if is_training_correct {
+            training_corrects += 1;
         }
         if i % 100 == 0 {
-            println!("i: {}, %correct: {}", i, corrects as f64 / 100.0);
-            corrects = 0;
+            println!("i: {}, %training_correct: {}", i, training_corrects as f64 / 100.0);
+            training_corrects = 0;
         }
     }
+    
+    let testing_corrects = test(&perceptron, &mut canvas, 100);
+    println!("the final test. %testing_correct: {}", testing_corrects as f64 / 100.0);
 
     fs::create_dir_all(&perceptron_weight_checkpoint.parent().unwrap()).unwrap();
     ndarray_npy::write_npy(&perceptron_weight_checkpoint, perceptron.weight()).unwrap();
     fs::create_dir_all(&perceptron_bias_checkpoint.parent().unwrap()).unwrap();
     fs::write(&perceptron_bias_checkpoint, perceptron.bias().to_string()).unwrap();
+}
+
+fn test(perceptron: &Perceptron, canvas: &mut Canvas, sample_count: usize) -> usize {
+    let mut corrects = 0;
+    for i in 0..sample_count {
+        canvas.clear();
+        let label = match i % 2 == 0 {
+            true => {
+                canvas.draw_random_circle();
+                true
+            }
+            false => {
+                canvas.draw_random_rectangle();
+                false
+            }
+        };
+        let point_vector = canvas.one_dimensional_array();
+        if label == perceptron.predict(&point_vector) {
+            corrects += 1;
+        }
+    }
+    corrects
 }
