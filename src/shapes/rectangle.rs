@@ -11,9 +11,9 @@ impl Rectangle {
     fn check_rep(&self) {
         // nonzero
         let zero = Point { x: 0, y: 0 };
-        assert!(self.top_left != zero && self.bottom_right != zero);
+        assert!(self.top_left != zero || self.bottom_right != zero);
 
-        if self.top_left != zero && self.bottom_right != zero {
+        if self.top_left != zero || self.bottom_right != zero {
             assert!(self.top_left.x < self.bottom_right.x);
             assert!(self.top_left.y < self.bottom_right.y);
         }
