@@ -3,11 +3,13 @@ use std::{fs, path::Path};
 use crate_perceptron::{canvas::Canvas, perceptron::Perceptron};
 
 fn main() {
-    let rounds = 1000;
+    let rounds = 1000000000;
+    let sample_len = 2000;
     let checkpoint = "checkpoints/";
+    let bias = 20.0;
 
-    let canvas_width = 512;
-    let canvas_height = 512;
+    let canvas_width = 20;
+    let canvas_height = 20;
 
     let mut canvas = Canvas::new(canvas_width, canvas_height);
 
@@ -28,7 +30,7 @@ fn main() {
             let x: f64 = x.parse().unwrap();
             Some(x)
         }
-        false => None,
+        false => Some(bias),
     };
 
     let mut perceptron = Perceptron::new(canvas.height() * canvas.width(), weight, bias);
@@ -51,8 +53,12 @@ fn main() {
         if is_training_correct {
             training_corrects += 1;
         }
-        if i % 100 == 0 {
-            println!("i: {}, %training_correct: {}", i, training_corrects as f64 / 100.0);
+        if i % sample_len == 0 {
+            let correction_rate = training_corrects as f64 / sample_len as f64;
+            println!("i: {}, %training_correct: {}", i, correction_rate);
+            if training_corrects == sample_len {
+                break;
+            }
             training_corrects = 0;
         }
     }
